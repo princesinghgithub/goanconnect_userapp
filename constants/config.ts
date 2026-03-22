@@ -9,20 +9,23 @@
 // Jo bhi IP mila woh yahan daalo
 // export const API_BASE_URL = 'http://10.117.136.210:5000/api';
 // export const SOCKET_URL   = 'http://10.117.136.210:5000';
-export const API_BASE_URL = 'http://10.117.136.210:5000/api';
-export const SOCKET_URL   = 'http://10.117.136.210:5000';
+// export const API_BASE_URL = 'http://10.117.136.210:5000/api';
+// export const SOCKET_URL   = 'http://10.117.136.210:5000';
+
+export const API_BASE_URL = "http://10.60.149.210:5000/api";
+export const SOCKET_URL = "http://10.60.149.210:5000";
 
 // App Config
-export const APP_NAME = 'Goan Connect';
-export const APP_VERSION = '1.0.0';
+export const APP_NAME = "Goan Connect";
+export const APP_VERSION = "1.0.0";
 
 // Vehicle Types
 export const VEHICLE_TYPES = {
-  BIKE: 'bike',
-  AUTO: 'auto',
-  CAB: 'cab',
-  TRACTOR: 'tractor',
-  JCB: 'jcb',
+  BIKE: "bike",
+  AUTO: "auto",
+  CAB: "cab",
+  TRACTOR: "tractor",
+  JCB: "jcb",
 } as const;
 
 // Fare per KM (backend se override hoga)

@@ -364,19 +364,312 @@
 //   sosBtnText: { color: '#e74c3c', fontSize: 12, fontWeight: '600' },
 // });
 
-
 // app/(booking)/live-tracking.tsx
-import { API_BASE_URL } from '@/constants/config';
-import { Ionicons } from '@expo/vector-icons';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import axios from 'axios';
-import { router, useLocalSearchParams } from 'expo-router';
-import React, { useEffect, useRef, useState } from 'react';
+// import { API_BASE_URL } from '@/constants/config';
+// import { Ionicons } from '@expo/vector-icons';
+// import AsyncStorage from '@react-native-async-storage/async-storage';
+// import axios from 'axios';
+// import { router, useLocalSearchParams } from 'expo-router';
+// import React, { useEffect, useRef, useState } from 'react';
+// import {
+//   Alert, Animated, Linking, StyleSheet,
+//   Text, TouchableOpacity, View,
+// } from 'react-native';
+// import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
+
+// export default function LiveTrackingScreen() {
+//   const params = useLocalSearchParams<{
+//     bookingId: string;
+//     driverName: string;
+//     driverPhone: string;
+//     vehicleType: string;
+//     fare: string;
+//     pickupAddress: string;
+//     dropAddress: string;
+//   }>();
+
+//   const mapRef = useRef<MapView>(null);
+//   const [rideStatus, setRideStatus] = useState('accepted');
+//   const [driverLocation, setDriverLocation] = useState<any>(null);
+//   const [otp, setOtp] = useState('');
+//   const slideAnim = useRef(new Animated.Value(0)).current;
+//   const pollRef = useRef<any>(null);
+
+//   const VEHICLE_EMOJI: any = { bike: '🏍️', auto: '🛺', car: '🚗' };
+
+//   const STATUS_INFO: any = {
+//     accepted: { text: 'Driver aa raha hai...', color: '#3498db', icon: 'navigate' },
+//     arrived:  { text: 'Driver pahunch gaya! OTP batao', color: '#9b59b6', icon: 'location' },
+//     started:  { text: 'Ride chal rahi hai 🚀', color: '#27ae60', icon: 'speedometer' },
+//   };
+
+//   useEffect(() => {
+//     startPolling();
+//     animateCard();
+//     return () => clearInterval(pollRef.current);
+//   }, []);
+
+//   const animateCard = () => {
+//     Animated.spring(slideAnim, {
+//       toValue: 1, tension: 65, friction: 11, useNativeDriver: true,
+//     }).start();
+//   };
+
+//   const startPolling = () => {
+//     pollRef.current = setInterval(async () => {
+//       try {
+//         const token = await AsyncStorage.getItem('token');
+//         const res = await axios.get(`${API_BASE_URL}/ride/${params.bookingId}`, {
+//           headers: { Authorization: `Bearer ${token}` },
+//         });
+//         const ride = res.data?.data;
+//         if (!ride) return;
+
+//         setRideStatus(ride.status);
+//         setOtp(ride.otp || '');
+
+//         // Driver location (agar provider populate hua ho)
+//         if (ride.provider?.currentLocation) {
+//           setDriverLocation({
+//             latitude:  ride.provider.currentLocation.latitude,
+//             longitude: ride.provider.currentLocation.longitude,
+//           });
+//         }
+
+//         // Ride complete ho gayi
+//         if (ride.status === 'completed') {
+//           clearInterval(pollRef.current);
+//           router.replace({
+//             pathname: '/(booking)/trip-complete',
+//             params: {
+//               bookingId:     params.bookingId,
+//               fare:          String(ride.fare),
+//               vehicleType:   params.vehicleType,
+//               pickupAddress: params.pickupAddress,
+//               dropAddress:   params.dropAddress,
+//               driverName:    params.driverName,
+//               distance:      String(ride.distance),
+//             },
+//           });
+//         }
+
+//         // Ride cancel ho gayi
+//         if (ride.status === 'cancelled') {
+//           clearInterval(pollRef.current);
+//           Alert.alert('Ride Cancel', 'Driver ne ride cancel kar di.', [
+//             { text: 'OK', onPress: () => router.replace('/(tabs)/home') },
+//           ]);
+//         }
+//       } catch (e) {}
+//     }, 5000);
+//   };
+
+//   const handleCall = () => {
+//     if (params.driverPhone) {
+//       Linking.openURL(`tel:${params.driverPhone}`);
+//     }
+//   };
+
+//   const handleCancel = () => {
+//     Alert.alert('Ride Cancel?', 'Kya aap ride cancel karna chahte hain?', [
+//       { text: 'Nahi', style: 'cancel' },
+//       {
+//         text: 'Haan Cancel Karo', style: 'destructive',
+//         onPress: async () => {
+//           try {
+//             const token = await AsyncStorage.getItem('token');
+//             await axios.post(`${API_BASE_URL}/ride/cancel`,
+//               { rideId: params.bookingId },
+//               { headers: { Authorization: `Bearer ${token}` } }
+//             );
+//           } catch (e) {}
+//           clearInterval(pollRef.current);
+//           await AsyncStorage.removeItem('pickup');
+//           await AsyncStorage.removeItem('drop');
+//           router.replace('/(tabs)/home');
+//         },
+//       },
+//     ]);
+//   };
+
+//   const currentStatus = STATUS_INFO[rideStatus] || STATUS_INFO['accepted'];
+
+//   return (
+//     <View style={styles.container}>
+//       {/* MAP */}
+//       <MapView
+//         ref={mapRef}
+//         style={styles.map}
+//         provider={PROVIDER_GOOGLE}
+//         showsUserLocation
+//         initialRegion={{
+//           latitude:      driverLocation?.latitude  || 24.75,
+//           longitude:     driverLocation?.longitude || 81.5,
+//           latitudeDelta:  0.03,
+//           longitudeDelta: 0.03,
+//         }}
+//       >
+//         {driverLocation && (
+//           <Marker coordinate={driverLocation} title="Driver">
+//             <View style={styles.driverMarker}>
+//               <Text style={{ fontSize: 24 }}>
+//                 {VEHICLE_EMOJI[params.vehicleType] || '🚗'}
+//               </Text>
+//             </View>
+//           </Marker>
+//         )}
+//       </MapView>
+
+//       {/* Status Bar */}
+//       <View style={[styles.statusBar, { backgroundColor: currentStatus.color }]}>
+//         <Ionicons name={currentStatus.icon} size={18} color="#fff" />
+//         <Text style={styles.statusBarText}>{currentStatus.text}</Text>
+//       </View>
+
+//       {/* Bottom Card */}
+//       <Animated.View style={[
+//         styles.bottomCard,
+//         { transform: [{ translateY: slideAnim.interpolate({ inputRange: [0, 1], outputRange: [300, 0] }) }] }
+//       ]}>
+//         {/* Driver Info */}
+//         <View style={styles.driverRow}>
+//           <View style={styles.driverAvatar}>
+//             <Text style={styles.driverAvatarText}>
+//               {params.driverName?.charAt(0)?.toUpperCase() || 'D'}
+//             </Text>
+//           </View>
+//           <View style={styles.driverInfo}>
+//             <Text style={styles.driverName}>{params.driverName || 'Driver'}</Text>
+//             <Text style={styles.driverVehicle}>
+//               {VEHICLE_EMOJI[params.vehicleType]} {params.vehicleType?.toUpperCase()}
+//             </Text>
+//           </View>
+//           <TouchableOpacity style={styles.callBtn} onPress={handleCall}>
+//             <Ionicons name="call" size={20} color="#fff" />
+//           </TouchableOpacity>
+//         </View>
+
+//         <View style={styles.divider} />
+
+//         {/* OTP — arrived status pe dikhao */}
+//         {rideStatus === 'arrived' && otp ? (
+//           <View style={styles.otpContainer}>
+//             <Text style={styles.otpLabel}>Driver ko batao OTP:</Text>
+//             <Text style={styles.otpValue}>{otp}</Text>
+//           </View>
+//         ) : null}
+
+//         {/* Route */}
+//         <View style={styles.routeCard}>
+//           <View style={styles.routeRow}>
+//             <View style={[styles.dot, { backgroundColor: '#27ae60' }]} />
+//             <Text style={styles.routeText} numberOfLines={1}>{params.pickupAddress}</Text>
+//           </View>
+//           <View style={styles.routeLineV} />
+//           <View style={styles.routeRow}>
+//             <View style={[styles.dot, { backgroundColor: '#e74c3c' }]} />
+//             <Text style={styles.routeText} numberOfLines={1}>{params.dropAddress}</Text>
+//           </View>
+//         </View>
+
+//         {/* Fare */}
+//         <View style={styles.fareRow}>
+//           <Text style={styles.fareLabel}>Estimated Fare</Text>
+//           <Text style={styles.fareValue}>₹{params.fare}</Text>
+//         </View>
+
+//         {/* Cancel Button — sirf accepted/arrived pe */}
+//         {['accepted', 'arrived'].includes(rideStatus) && (
+//           <TouchableOpacity style={styles.cancelBtn} onPress={handleCancel}>
+//             <Text style={styles.cancelBtnText}>Ride Cancel Karo</Text>
+//           </TouchableOpacity>
+//         )}
+//       </Animated.View>
+//     </View>
+//   );
+// }
+
+// const styles = StyleSheet.create({
+//   container: { flex: 1 },
+//   map: { flex: 1 },
+//   statusBar: {
+//     position: 'absolute', top: 50, left: 16, right: 16,
+//     borderRadius: 12, padding: 12,
+//     flexDirection: 'row', alignItems: 'center', gap: 8,
+//     elevation: 5,
+//   },
+//   statusBarText: { color: '#fff', fontWeight: '800', fontSize: 14, flex: 1 },
+//   driverMarker: {
+//     backgroundColor: '#fff', borderRadius: 20, padding: 4,
+//     borderWidth: 2, borderColor: '#F5A623',
+//   },
+//   bottomCard: {
+//     position: 'absolute', bottom: 0, left: 0, right: 0,
+//     backgroundColor: '#fff', borderTopLeftRadius: 24, borderTopRightRadius: 24,
+//     padding: 20, paddingBottom: 34,
+//     shadowColor: '#000', shadowOffset: { width: 0, height: -4 },
+//     shadowOpacity: 0.12, shadowRadius: 12, elevation: 20,
+//   },
+//   driverRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 16 },
+//   driverAvatar: {
+//     width: 48, height: 48, borderRadius: 24,
+//     backgroundColor: '#1a3a5c', justifyContent: 'center',
+//     alignItems: 'center', marginRight: 12,
+//   },
+//   driverAvatarText: { fontSize: 20, fontWeight: '800', color: '#fff' },
+//   driverInfo: { flex: 1 },
+//   driverName: { fontSize: 16, fontWeight: '800', color: '#1a1a2e' },
+//   driverVehicle: { fontSize: 13, color: '#888', marginTop: 2 },
+//   callBtn: {
+//     width: 44, height: 44, borderRadius: 22,
+//     backgroundColor: '#27ae60', justifyContent: 'center', alignItems: 'center',
+//   },
+//   divider: { height: 1, backgroundColor: '#f0f0f0', marginBottom: 16 },
+//   otpContainer: {
+//     backgroundColor: '#fff8ee', borderRadius: 14, padding: 14,
+//     alignItems: 'center', marginBottom: 16,
+//     borderWidth: 2, borderColor: '#F5A623',
+//   },
+//   otpLabel: { fontSize: 13, color: '#888', marginBottom: 4 },
+//   otpValue: { fontSize: 36, fontWeight: '900', color: '#F5A623', letterSpacing: 8 },
+//   routeCard: {
+//     backgroundColor: '#f8f9fa', borderRadius: 12, padding: 12, marginBottom: 12,
+//   },
+//   routeRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 4 },
+//   dot: { width: 8, height: 8, borderRadius: 4, marginRight: 10 },
+//   routeLineV: { width: 1, height: 12, backgroundColor: '#ddd', marginLeft: 3, marginVertical: 2 },
+//   routeText: { flex: 1, fontSize: 13, color: '#444', fontWeight: '500' },
+//   fareRow: {
+//     flexDirection: 'row', justifyContent: 'space-between',
+//     alignItems: 'center', marginBottom: 16,
+//   },
+//   fareLabel: { fontSize: 14, color: '#888' },
+//   fareValue: { fontSize: 22, fontWeight: '900', color: '#F5A623' },
+//   cancelBtn: {
+//     borderWidth: 2, borderColor: '#e74c3c', borderRadius: 14,
+//     padding: 14, alignItems: 'center',
+//   },
+//   cancelBtnText: { color: '#e74c3c', fontWeight: '800', fontSize: 15 },
+// });
+
+import { API_BASE_URL, SOCKET_URL } from "@/constants/config";
+import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import axios from "axios";
+import { router, useLocalSearchParams } from "expo-router";
+import { StatusBar } from "expo-status-bar";
+import React, { useEffect, useRef, useState } from "react";
 import {
-  Alert, Animated, Linking, StyleSheet,
-  Text, TouchableOpacity, View,
-} from 'react-native';
-import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
+  Alert,
+  Animated,
+  Linking,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import MapView, { Marker, PROVIDER_DEFAULT } from "react-native-maps";
+import { io } from "socket.io-client";
 
 export default function LiveTrackingScreen() {
   const params = useLocalSearchParams<{
@@ -389,202 +682,260 @@ export default function LiveTrackingScreen() {
     dropAddress: string;
   }>();
 
+  const [rideStatus, setRideStatus] = useState<
+    "accepted" | "arrived" | "started" | "completed"
+  >("accepted");
+  const [driverLoc, setDriverLoc] = useState<{
+    latitude: number;
+    longitude: number;
+  } | null>(null);
+  const [otp, setOtp] = useState("");
+  const [elapsed, setElapsed] = useState(0);
+
+  const socketRef = useRef<any>(null);
   const mapRef = useRef<MapView>(null);
-  const [rideStatus, setRideStatus] = useState('accepted');
-  const [driverLocation, setDriverLocation] = useState<any>(null);
-  const [otp, setOtp] = useState('');
+  const timerRef = useRef<any>(null);
   const slideAnim = useRef(new Animated.Value(0)).current;
-  const pollRef = useRef<any>(null);
-
-  const VEHICLE_EMOJI: any = { bike: '🏍️', auto: '🛺', car: '🚗' };
-
-  const STATUS_INFO: any = {
-    accepted: { text: 'Driver aa raha hai...', color: '#3498db', icon: 'navigate' },
-    arrived:  { text: 'Driver pahunch gaya! OTP batao', color: '#9b59b6', icon: 'location' },
-    started:  { text: 'Ride chal rahi hai 🚀', color: '#27ae60', icon: 'speedometer' },
-  };
 
   useEffect(() => {
-    startPolling();
-    animateCard();
-    return () => clearInterval(pollRef.current);
+    connectSocket();
+    pollRideStatus();
+    slideIn();
+    return () => {
+      socketRef.current?.disconnect();
+      clearInterval(timerRef.current);
+    };
   }, []);
 
-  const animateCard = () => {
+  const slideIn = () => {
     Animated.spring(slideAnim, {
-      toValue: 1, tension: 65, friction: 11, useNativeDriver: true,
+      toValue: 1,
+      useNativeDriver: true,
+      tension: 60,
+      friction: 10,
     }).start();
   };
 
-  const startPolling = () => {
-    pollRef.current = setInterval(async () => {
+  const connectSocket = async () => {
+    const userData = await AsyncStorage.getItem("user");
+    if (!userData) return;
+    const u = JSON.parse(userData);
+
+    const socket = io(SOCKET_URL, { transports: ["websocket"] });
+    socket.on("connect", () => {
+      socket.emit("user_join", u._id || u.id);
+      socket.emit("join_booking", params.bookingId);
+    });
+
+    // Driver location update
+    socket.on("location_update", (data: any) => {
+      if (data?.lat && data?.lng) {
+        const loc = { latitude: data.lat, longitude: data.lng };
+        setDriverLoc(loc);
+        mapRef.current?.animateToRegion(
+          { ...loc, latitudeDelta: 0.01, longitudeDelta: 0.01 },
+          500,
+        );
+      }
+    });
+
+    socketRef.current = socket;
+  };
+
+  // Poll ride status every 5 seconds
+  const pollRideStatus = () => {
+    timerRef.current = setInterval(async () => {
       try {
-        const token = await AsyncStorage.getItem('token');
-        const res = await axios.get(`${API_BASE_URL}/ride/${params.bookingId}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const token = await AsyncStorage.getItem("token");
+        const res = await axios.get(
+          `${API_BASE_URL}/ride/${params.bookingId}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          },
+        );
         const ride = res.data?.data;
         if (!ride) return;
 
         setRideStatus(ride.status);
-        setOtp(ride.otp || '');
+        if (ride.otp) setOtp(ride.otp);
 
-        // Driver location (agar provider populate hua ho)
-        if (ride.provider?.currentLocation) {
-          setDriverLocation({
-            latitude:  ride.provider.currentLocation.latitude,
-            longitude: ride.provider.currentLocation.longitude,
-          });
+        if (ride.status === "completed") {
+          clearInterval(timerRef.current);
+          socketRef.current?.disconnect();
+          setTimeout(() => {
+            router.replace({
+              pathname: "/(booking)/trip-complete",
+              params: {
+                bookingId: params.bookingId,
+                fare: String(ride.fare),
+                vehicleType: params.vehicleType,
+                pickupAddress: params.pickupAddress,
+                dropAddress: params.dropAddress,
+                driverName: params.driverName,
+                distance: String(ride.distance),
+              },
+            });
+          }, 1000);
         }
 
-        // Ride complete ho gayi
-        if (ride.status === 'completed') {
-          clearInterval(pollRef.current);
-          router.replace({
-            pathname: '/(booking)/trip-complete',
-            params: {
-              bookingId:     params.bookingId,
-              fare:          String(ride.fare),
-              vehicleType:   params.vehicleType,
-              pickupAddress: params.pickupAddress,
-              dropAddress:   params.dropAddress,
-              driverName:    params.driverName,
-              distance:      String(ride.distance),
-            },
-          });
-        }
-
-        // Ride cancel ho gayi
-        if (ride.status === 'cancelled') {
-          clearInterval(pollRef.current);
-          Alert.alert('Ride Cancel', 'Driver ne ride cancel kar di.', [
-            { text: 'OK', onPress: () => router.replace('/(tabs)/home') },
+        if (ride.status === "cancelled") {
+          clearInterval(timerRef.current);
+          Alert.alert("Ride Cancel", "Driver ne ride cancel kar di.", [
+            { text: "OK", onPress: () => router.replace("/(tabs)/home") },
           ]);
         }
       } catch (e) {}
     }, 5000);
   };
 
-  const handleCall = () => {
-    if (params.driverPhone) {
-      Linking.openURL(`tel:${params.driverPhone}`);
-    }
+  const callDriver = () => {
+    if (params.driverPhone) Linking.openURL(`tel:${params.driverPhone}`);
   };
 
-  const handleCancel = () => {
-    Alert.alert('Ride Cancel?', 'Kya aap ride cancel karna chahte hain?', [
-      { text: 'Nahi', style: 'cancel' },
-      {
-        text: 'Haan Cancel Karo', style: 'destructive',
-        onPress: async () => {
-          try {
-            const token = await AsyncStorage.getItem('token');
-            await axios.post(`${API_BASE_URL}/ride/cancel`,
-              { rideId: params.bookingId },
-              { headers: { Authorization: `Bearer ${token}` } }
-            );
-          } catch (e) {}
-          clearInterval(pollRef.current);
-          await AsyncStorage.removeItem('pickup');
-          await AsyncStorage.removeItem('drop');
-          router.replace('/(tabs)/home');
-        },
-      },
-    ]);
+  const VEMOJI: any = { bike: "🏍️", auto: "🛺", car: "🚗", tractor: "🚜" };
+
+  const STATUS_INFO = {
+    accepted: {
+      emoji: "🚗",
+      title: "Driver Aa Raha Hai",
+      sub: "Driver aapki taraf aa raha hai",
+      color: "#3498db",
+    },
+    arrived: {
+      emoji: "📍",
+      title: "Driver Pahunch Gaya!",
+      sub: "Driver aapke paas hai — bahar aao!",
+      color: "#9b59b6",
+    },
+    started: {
+      emoji: "🛣️",
+      title: "Safar Shuru!",
+      sub: "Aap apni manzil ki taraf ja rahe ho",
+      color: "#F5A623",
+    },
+    completed: {
+      emoji: "🎉",
+      title: "Manzil Aa Gayi!",
+      sub: "Ride complete ho gayi",
+      color: "#27ae60",
+    },
   };
 
-  const currentStatus = STATUS_INFO[rideStatus] || STATUS_INFO['accepted'];
+  const info = STATUS_INFO[rideStatus];
 
   return (
     <View style={styles.container}>
-      {/* MAP */}
+      <StatusBar style="light" />
+
+      {/* Map */}
       <MapView
         ref={mapRef}
         style={styles.map}
-        provider={PROVIDER_GOOGLE}
-        showsUserLocation
+        provider={PROVIDER_DEFAULT}
         initialRegion={{
-          latitude:      driverLocation?.latitude  || 24.75,
-          longitude:     driverLocation?.longitude || 81.5,
-          latitudeDelta:  0.03,
-          longitudeDelta: 0.03,
+          latitude: 24.5,
+          longitude: 81.3,
+          latitudeDelta: 0.05,
+          longitudeDelta: 0.05,
         }}
+        showsUserLocation
+        showsMyLocationButton={false}
       >
-        {driverLocation && (
-          <Marker coordinate={driverLocation} title="Driver">
+        {driverLoc && (
+          <Marker coordinate={driverLoc} title={params.driverName || "Driver"}>
             <View style={styles.driverMarker}>
               <Text style={{ fontSize: 24 }}>
-                {VEHICLE_EMOJI[params.vehicleType] || '🚗'}
+                {VEMOJI[params.vehicleType] || "🚗"}
               </Text>
             </View>
           </Marker>
         )}
       </MapView>
 
-      {/* Status Bar */}
-      <View style={[styles.statusBar, { backgroundColor: currentStatus.color }]}>
-        <Ionicons name={currentStatus.icon} size={18} color="#fff" />
-        <Text style={styles.statusBarText}>{currentStatus.text}</Text>
-      </View>
+      {/* Back */}
+      <TouchableOpacity
+        style={styles.backBtn}
+        onPress={() => Alert.alert("Ride Active", "Ride abhi chal rahi hai!")}
+      >
+        <Ionicons name="arrow-back" size={22} color="#1a3a5c" />
+      </TouchableOpacity>
 
-      {/* Bottom Card */}
-      <Animated.View style={[
-        styles.bottomCard,
-        { transform: [{ translateY: slideAnim.interpolate({ inputRange: [0, 1], outputRange: [300, 0] }) }] }
-      ]}>
-        {/* Driver Info */}
-        <View style={styles.driverRow}>
-          <View style={styles.driverAvatar}>
-            <Text style={styles.driverAvatarText}>
-              {params.driverName?.charAt(0)?.toUpperCase() || 'D'}
-            </Text>
+      {/* Bottom Sheet */}
+      <Animated.View
+        style={[
+          styles.sheet,
+          {
+            transform: [
+              {
+                translateY: slideAnim.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [400, 0],
+                }),
+              },
+            ],
+          },
+        ]}
+      >
+        {/* Status */}
+        <View style={[styles.statusBar, { backgroundColor: info.color }]}>
+          <Text style={styles.statusEmoji}>{info.emoji}</Text>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.statusTitle}>{info.title}</Text>
+            <Text style={styles.statusSub}>{info.sub}</Text>
           </View>
-          <View style={styles.driverInfo}>
-            <Text style={styles.driverName}>{params.driverName || 'Driver'}</Text>
-            <Text style={styles.driverVehicle}>
-              {VEHICLE_EMOJI[params.vehicleType]} {params.vehicleType?.toUpperCase()}
-            </Text>
-          </View>
-          <TouchableOpacity style={styles.callBtn} onPress={handleCall}>
-            <Ionicons name="call" size={20} color="#fff" />
-          </TouchableOpacity>
         </View>
 
-        <View style={styles.divider} />
-
-        {/* OTP — arrived status pe dikhao */}
-        {rideStatus === 'arrived' && otp ? (
-          <View style={styles.otpContainer}>
+        {/* OTP — sirf arrived pe dikhao */}
+        {rideStatus === "arrived" && otp ? (
+          <View style={styles.otpBox}>
             <Text style={styles.otpLabel}>Driver ko batao OTP:</Text>
             <Text style={styles.otpValue}>{otp}</Text>
           </View>
         ) : null}
 
+        {/* Driver Info */}
+        <View style={styles.driverCard}>
+          <View style={styles.driverAvatar}>
+            <Text style={styles.driverAvatarTxt}>
+              {(params.driverName || "D").charAt(0).toUpperCase()}
+            </Text>
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.driverName}>
+              {params.driverName || "Driver"}
+            </Text>
+            <Text style={styles.driverVehicle}>
+              {VEMOJI[params.vehicleType] || "🚗"}{" "}
+              {(params.vehicleType || "").toUpperCase()}
+            </Text>
+          </View>
+          <TouchableOpacity style={styles.callBtn} onPress={callDriver}>
+            <Ionicons name="call" size={20} color="#fff" />
+          </TouchableOpacity>
+        </View>
+
         {/* Route */}
         <View style={styles.routeCard}>
           <View style={styles.routeRow}>
-            <View style={[styles.dot, { backgroundColor: '#27ae60' }]} />
-            <Text style={styles.routeText} numberOfLines={1}>{params.pickupAddress}</Text>
+            <View style={[styles.routeDot, { backgroundColor: "#27ae60" }]} />
+            <Text style={styles.routeAddr} numberOfLines={1}>
+              {params.pickupAddress || "—"}
+            </Text>
           </View>
-          <View style={styles.routeLineV} />
+          <View style={styles.routeLine} />
           <View style={styles.routeRow}>
-            <View style={[styles.dot, { backgroundColor: '#e74c3c' }]} />
-            <Text style={styles.routeText} numberOfLines={1}>{params.dropAddress}</Text>
+            <View style={[styles.routeDot, { backgroundColor: "#e74c3c" }]} />
+            <Text style={styles.routeAddr} numberOfLines={1}>
+              {params.dropAddress || "—"}
+            </Text>
           </View>
         </View>
 
         {/* Fare */}
         <View style={styles.fareRow}>
-          <Text style={styles.fareLabel}>Estimated Fare</Text>
-          <Text style={styles.fareValue}>₹{params.fare}</Text>
+          <Text style={styles.fareLabel}>Total Fare</Text>
+          <Text style={styles.fareAmount}>₹{params.fare}</Text>
         </View>
-
-        {/* Cancel Button — sirf accepted/arrived pe */}
-        {['accepted', 'arrived'].includes(rideStatus) && (
-          <TouchableOpacity style={styles.cancelBtn} onPress={handleCancel}>
-            <Text style={styles.cancelBtnText}>Ride Cancel Karo</Text>
-          </TouchableOpacity>
-        )}
       </Animated.View>
     </View>
   );
@@ -593,62 +944,112 @@ export default function LiveTrackingScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   map: { flex: 1 },
-  statusBar: {
-    position: 'absolute', top: 50, left: 16, right: 16,
-    borderRadius: 12, padding: 12,
-    flexDirection: 'row', alignItems: 'center', gap: 8,
+  backBtn: {
+    position: "absolute",
+    top: 55,
+    left: 16,
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    backgroundColor: "#fff",
+    justifyContent: "center",
+    alignItems: "center",
     elevation: 5,
   },
-  statusBarText: { color: '#fff', fontWeight: '800', fontSize: 14, flex: 1 },
   driverMarker: {
-    backgroundColor: '#fff', borderRadius: 20, padding: 4,
-    borderWidth: 2, borderColor: '#F5A623',
+    backgroundColor: "#fff",
+    borderRadius: 24,
+    padding: 6,
+    borderWidth: 2,
+    borderColor: "#F5A623",
+    elevation: 4,
   },
-  bottomCard: {
-    position: 'absolute', bottom: 0, left: 0, right: 0,
-    backgroundColor: '#fff', borderTopLeftRadius: 24, borderTopRightRadius: 24,
-    padding: 20, paddingBottom: 34,
-    shadowColor: '#000', shadowOffset: { width: 0, height: -4 },
-    shadowOpacity: 0.12, shadowRadius: 12, elevation: 20,
+  sheet: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: "#fff",
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    overflow: "hidden",
+    elevation: 20,
   },
-  driverRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 16 },
+  statusBar: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 16,
+    gap: 12,
+  },
+  statusEmoji: { fontSize: 28 },
+  statusTitle: { fontSize: 15, fontWeight: "900", color: "#fff" },
+  statusSub: { fontSize: 12, color: "rgba(255,255,255,0.85)", marginTop: 2 },
+  otpBox: {
+    backgroundColor: "#fff8ee",
+    margin: 12,
+    borderRadius: 16,
+    padding: 16,
+    alignItems: "center",
+    borderWidth: 2,
+    borderColor: "#F5A623",
+  },
+  otpLabel: { fontSize: 13, color: "#888", marginBottom: 6 },
+  otpValue: {
+    fontSize: 40,
+    fontWeight: "900",
+    color: "#F5A623",
+    letterSpacing: 10,
+  },
+  driverCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 16,
+    gap: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: "#f0f0f0",
+  },
   driverAvatar: {
-    width: 48, height: 48, borderRadius: 24,
-    backgroundColor: '#1a3a5c', justifyContent: 'center',
-    alignItems: 'center', marginRight: 12,
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: "#1a3a5c",
+    justifyContent: "center",
+    alignItems: "center",
   },
-  driverAvatarText: { fontSize: 20, fontWeight: '800', color: '#fff' },
-  driverInfo: { flex: 1 },
-  driverName: { fontSize: 16, fontWeight: '800', color: '#1a1a2e' },
-  driverVehicle: { fontSize: 13, color: '#888', marginTop: 2 },
+  driverAvatarTxt: { color: "#fff", fontWeight: "900", fontSize: 20 },
+  driverName: { fontSize: 16, fontWeight: "800", color: "#1a1a2e" },
+  driverVehicle: { fontSize: 13, color: "#888", marginTop: 3 },
   callBtn: {
-    width: 44, height: 44, borderRadius: 22,
-    backgroundColor: '#27ae60', justifyContent: 'center', alignItems: 'center',
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: "#27ae60",
+    justifyContent: "center",
+    alignItems: "center",
+    elevation: 3,
   },
-  divider: { height: 1, backgroundColor: '#f0f0f0', marginBottom: 16 },
-  otpContainer: {
-    backgroundColor: '#fff8ee', borderRadius: 14, padding: 14,
-    alignItems: 'center', marginBottom: 16,
-    borderWidth: 2, borderColor: '#F5A623',
-  },
-  otpLabel: { fontSize: 13, color: '#888', marginBottom: 4 },
-  otpValue: { fontSize: 36, fontWeight: '900', color: '#F5A623', letterSpacing: 8 },
   routeCard: {
-    backgroundColor: '#f8f9fa', borderRadius: 12, padding: 12, marginBottom: 12,
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: "#f0f0f0",
   },
-  routeRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 4 },
-  dot: { width: 8, height: 8, borderRadius: 4, marginRight: 10 },
-  routeLineV: { width: 1, height: 12, backgroundColor: '#ddd', marginLeft: 3, marginVertical: 2 },
-  routeText: { flex: 1, fontSize: 13, color: '#444', fontWeight: '500' },
+  routeRow: { flexDirection: "row", alignItems: "center", paddingVertical: 4 },
+  routeDot: { width: 10, height: 10, borderRadius: 5, marginRight: 12 },
+  routeLine: {
+    width: 1,
+    height: 14,
+    backgroundColor: "#e0e0e0",
+    marginLeft: 4,
+    marginVertical: 2,
+  },
+  routeAddr: { flex: 1, fontSize: 13, color: "#1a1a2e", fontWeight: "600" },
   fareRow: {
-    flexDirection: 'row', justifyContent: 'space-between',
-    alignItems: 'center', marginBottom: 16,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: 16,
+    paddingBottom: 32,
   },
-  fareLabel: { fontSize: 14, color: '#888' },
-  fareValue: { fontSize: 22, fontWeight: '900', color: '#F5A623' },
-  cancelBtn: {
-    borderWidth: 2, borderColor: '#e74c3c', borderRadius: 14,
-    padding: 14, alignItems: 'center',
-  },
-  cancelBtnText: { color: '#e74c3c', fontWeight: '800', fontSize: 15 },
+  fareLabel: { fontSize: 14, color: "#888", fontWeight: "700" },
+  fareAmount: { fontSize: 24, fontWeight: "900", color: "#F5A623" },
 });
